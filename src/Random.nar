@@ -1,11 +1,11 @@
-module Oak.Random
+module Nar.Random
 
 def int(a: Int, b: Int): Generator[Int] =
   GeneratorImpl(
     \(seed0) ->
       let ( lo, hi ) = if a < b then ( a, b ) else ( b, a )
       let range = hi - lo + 1
-      in 
+      in
         if ((range - 1) & range) == 0 then
           ( Bitwise.shiftRightZfBy(0, (range - 1) & peel(seed0)) + lo, next(seed0) )
         else
@@ -43,7 +43,7 @@ def float(a: Float, b: Float): Generator[Float] =
 def constant(value: a): Generator[a] =
   GeneratorImpl(\(seed) -> (value, seed))
 
-def pair(genA: Generator[a], genB: Generator[b]): Generator[(a,b)] = 
+def pair(genA: Generator[a], genB: Generator[b]): Generator[(a,b)] =
   map2(\(a, b) -> (a,b), genA, genB)
 
 def list(n: Int, GeneratorImpl(gen): Generator[a]): Generator[List[a]] =
@@ -55,7 +55,7 @@ def hidden listHelp(revList: List[a], n: Int, gen: (Seed): (a, Seed), seed: Seed
   else
     let (value, newSeed) = gen(seed)
     in listHelp(value | revList, n-1, gen, newSeed)
-    
+
 def uniform(value: a, valueList: List[a]): Generator[a] =
   weighted(addOne(value), List.map(addOne, valueList))
 
@@ -85,8 +85,8 @@ def map(func: (a): b, GeneratorImpl(genA): Generator[a]): Generator[b] =
   )
 
 def map2(
-  func: (a, b): c, 
-  GeneratorImpl(genA): Generator[a], 
+  func: (a, b): c,
+  GeneratorImpl(genA): Generator[a],
   GeneratorImpl(genB): Generator[b]
 ): Generator[c] =
   GeneratorImpl(
@@ -149,7 +149,7 @@ def andThen(callback: (a): Generator[b], GeneratorImpl(genA):Generator[a]): Gene
   GeneratorImpl(
     \(seed) ->
       let (result, newSeed) = genA(seed)
-      let GeneratorImpl(genB) = callback(result) 
+      let GeneratorImpl(genB) = callback(result)
       in genB(newSeed)
   )
 
@@ -170,7 +170,7 @@ def hidden peel(SeedImpl(state, _): Seed): Int =
   let word = Bitwise.xor(state, Bitwise.shiftRightZfBy(Bitwise.shiftRightZfBy(28, state) + 4, state)) * 277803737
   in Bitwise.shiftRightZfBy(0, Bitwise.xor(Bitwise.shiftRightZfBy(22, word), word))
 
-type Generator[a] 
+type Generator[a]
   = hidden GeneratorImpl((Seed): ( a, Seed ))
 
 def hidden step(GeneratorImpl(generator): Generator[a], seed: Seed): (a, Seed) =
